@@ -1,0 +1,177 @@
+- hosts: localhost
+
+  tasks:
+    - name: install pip
+      yum:
+        name: pip
+    - name: install  coker for python
+      pip:
+        name: docker-py
+
+
+    - name: create namespace
+
+      k8s:
+
+        name: sandeep
+
+        api_version: v1
+
+        kind: Namespace
+
+        state: present
+    - name: deploy a web server1
+
+      k8s:
+
+        api_version: v1
+
+        namespace: sandeep
+
+        definition:
+
+          kind: Deployment
+
+          metadata:
+
+            labels:
+
+              app: frontend
+
+            name: frontend
+          spec:
+
+            replicas: 1
+
+            selector:
+
+              matchLabels:
+
+                app: frontend
+
+            template:
+
+              metadata:
+
+                labels:
+
+                  app: frontend
+
+              spec:
+
+                containers:
+
+                  - name: frontend
+
+                    image: sandeep9583/vote:frontend
+                    resources:
+                      limits:
+                        cpu: 500m
+                      requests:
+                        cpu: 200m
+
+    - name: deploy a web server1
+
+      k8s:
+
+        api_version: v1
+
+        namespace: sandeep
+
+        definition:
+
+          kind: Deployment
+
+          metadata:
+
+            labels:
+
+              app: backend
+
+            name: backend
+          spec:
+
+            replicas: 1
+
+            selector:
+
+              matchLabels:
+
+                app: backend
+
+            template:
+
+              metadata:
+
+                labels:
+
+                  app: backend
+
+              spec:
+
+                containers:
+
+                  - name: backend
+
+                    image: sandeep9583/vote:backend
+                    env:
+                      - name: MYSQL_ROOT_PASSWORD
+                        value: '123'
+
+    - name: deploy a web server
+      k8s:
+        api_version: v1
+        namespace: sandeep
+        definition:
+          kind: Service
+          metadata:
+            labels:
+              app: frontend
+            name: frontend
+            namespace: sandeep
+          spec:
+            ports:
+            - port: 80
+              protocol: TCP
+              targetPort: 80
+            selector:
+              app: frontend
+            type: LoadBalancer
+
+    - name: deploy a web server
+      k8s:
+        api_version: v1
+        namespace: sandeep
+        definition:
+          kind: Service
+          metadata:
+            labels:
+              app: backend
+            name: backend
+            namespace: sandeep
+          spec:
+            ports:
+            - port: 3306
+              protocol: TCP
+              targetPort: 3306
+            selector:
+              app: backend
+            type: ClusterIP
+
+    - name: Deploy hpa
+      k8s:
+        api_version: v1
+        namespace: sandeep
+        definition:
+          kind: HorizontalPodAutoscaler
+          metadata:
+            name: frontend
+            namespace: sandeep
+          spec:
+            scaleTargetRef:
+              apiVersion: apps/v1
+              kind: Deployment
+              name: frontend
+            minReplicas: 2
+            maxReplicas: 10
+            targetCPUUtilizationPercentage: 30

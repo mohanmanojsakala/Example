@@ -1,0 +1,18 @@
+frontend:
+  name: frontend
+  namespace: sandeep
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: sandeep9583/vote:frontend
+
+backend:
+  name: backend
+  namespace: sandeep
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: sandeep9583/vote:backend
+hpa:
+  name: frontend
+  namespace: sandeep

@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ .Values.frontend.name}}
+  name: {{ .Values.frontend.name}}
+  namespace: {{ .Values.frontend.namespace}}
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: {{ .Values.frontend.name}}
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ .Values.backend.name}} 
+  name: {{ .Values.backend.name}}
+  namespace: {{ .Values.backend.namespace}}
+spec:
+  ports:
+  - port: 3306
+    protocol: TCP
+    targetPort: 3306
+  selector:
+    app: {{ .Values.backend.name}}
+  type: ClusterIP
+
+
+
